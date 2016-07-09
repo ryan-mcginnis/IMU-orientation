@@ -1,4 +1,4 @@
-function qinf = get_orientation_compfilter_quaternion(time, a, w, ind)
+function qinf = get_orientation_quaternion(time, a, w, ind)
 %Function to determine orientation of IMU.  Does so in two steps: 1) Define 
 %initial orientation of device based on direction of gravity and 2) Define
 %orientation thereafter by fusing acceleration and angular velocity
@@ -20,13 +20,6 @@ function qinf = get_orientation_compfilter_quaternion(time, a, w, ind)
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
-% Method validated in:
-% McGinnis RS, Cain SM, Davidson SP, Vitali RV, McLean SG, Perkins NC. 
-% Validation of Complementary Filter Based IMU Data Fusion for Tracking 
-% Torso Angle and Rifle Orientation. In ASME 2014 International Mechanical 
-% Engineering Congress and Exposition 2014 Nov 14 (pp. V003T03A052-V003T03A052). 
-% American Society of Mechanical Engineers.
-%
 %Inputs:
 %1. time - time (s, nx1) 
 %2. a - acceleration (g, nx3) 
@@ -36,17 +29,6 @@ function qinf = get_orientation_compfilter_quaternion(time, a, w, ind)
 %
 %Outputs:
 %1. qinf - quaternion describing IMU orientation (nx4)
-
-%Define signal characteristics based on still section
-amag = sqrt(sum(a.^2,2));
-wmag = sqrt(sum(w.^2,2));
-g_mag = mean(amag(ind));
-w0_mag = mean(wmag(ind)); %deg/s
-a_noise = std(amag(ind));
-w_noise = std(wmag(ind)); %deg/s
-a_lb = -3*a_noise; %-3 * sd of noise
-a_ub = -a_lb; %3 * sd of noise
-w_ub = (w0_mag + 3 * w_noise)*pi/180; %3 * sd above mean
 
 %Define initial Z direction (gravity)
 Z = mean(a(ind,:)) ./ norm(mean(a(ind,:)));
@@ -62,49 +44,16 @@ Y = cross(Z,X); Y = Y./norm(Y);
 R = [X; Y; Z];
 q0 = dcm2quatern(R.');
 
-%Define nominal filter gains
-Kp0 = 2;
-Ki0 = 1;
-
 %Initialize variables
 qinf = zeros(length(time),4); qinf(1,:) = q0;
-dc = zeros(size(time,1),3);
 
 %Convert angular velocity to rad/s and remove bias
 w = (w-(w(:,1).^0)*mean(w(ind,:))) * pi/180;
-wh = w;
 
 %Define orientation throughout trial
 for t=2:length(time)
-    %Propegate orientation
     dt = time(t) - time(t-1);
-    wt = w(t,:) - dc(t-1,:);
-    qt = qinf(t-1,:) + 0.5*dt*quaternProd(qinf(t-1,:), [0, wt]);
-    qt = qt ./ norm(qt);
-
-    %Assign Gain Values
-    amag = norm(a(t,:));
-    wmag = norm(wh(t,:));
-    if amag < a_ub+g_mag && amag > a_lb+g_mag && wmag < w_ub
-        Ki = Ki0;
-        Kp = Kp0;
-    elseif amag < a_ub+g_mag && amag > a_lb+g_mag && wmag < 5*w_ub
-        Ki = Ki0/10;
-        Kp = Kp0/10;
-    else
-        Ki = 0;
-        Kp = 0;
-    end
- 
-    at = a(t,:)./norm(a(t,:));
-    we = cross(at, quaternRot(quaternConj(qt), [0,0,1]));
-  
-    %Adjust angular velocity
-    dc(t,:) = dc(t-1, :) + dt * (-Ki * we);
-    wh(t,:) = w(t,:) - dc(t,:) + Kp * we;
-    
-    %Calculate corrected orientation
-    qt = qinf(t-1,:) + 0.5*dt*quaternProd(qinf(t-1,:), [0, wh(t,:)]);
+    qt = qinf(t-1,:) + 0.5*dt*quaternProd(qinf(t-1,:), [0, w(t,:)]);
     qinf(t,:) = qt ./ norm(qt);
 end
 end
