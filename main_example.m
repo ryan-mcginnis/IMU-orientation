@@ -18,7 +18,7 @@
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 %% Load example IMU data
-load('example_data.mat');
+load('example_data_v2.mat');
 time = data.t;
 a = data.a; %g
 w = data.w; %deg/s
@@ -49,8 +49,20 @@ a_quatern_comp = quaternRot(qinf_comp,a);
 w_quatern_comp = quaternRot(qinf_comp,w);
 
 
+%% Calculate orientation using DCM and optimization approach
+Rinf_opt = get_orientation_optim(time, a, w, ind);
+a_dcm_opt = dcmRot(Rinf_opt,a);
+w_dcm_opt = dcmRot(Rinf_opt,w);
+
+
+%% Calculate orientation using quaternion and optimization approach
+qinf_opt = get_orientation_optim_quaternion(time, a, w, ind);
+a_quatern_opt = quaternRot(qinf_opt,a);
+w_quatern_opt = quaternRot(qinf_opt,w);
+
+
 %% Plot the results
-% Plots show vertical component of world-fixed accelerometer measurment
+% Plots show vertical component of world-fixed accelerometer measurement
 figure; 
 set(gcf,'name','dcm vs quaternion (red) implementations');
 hold on;
@@ -72,6 +84,14 @@ set(gcf,'name','dcm raw vs complementary filter (red)');
 hold on;
 plot(time,a_dcm(:,3));
 plot(time,a_dcm_comp(:,3),'r');
+xlabel('Time (s)');
+ylabel('Acceleration (g)');
+
+figure; 
+set(gcf,'name','dcm raw vs optimization (red)');
+hold on;
+plot(time,a_dcm(:,3));
+plot(time,a_dcm_opt(:,3),'r');
 xlabel('Time (s)');
 ylabel('Acceleration (g)');
 

@@ -2,7 +2,8 @@ function Rinf = get_orientation_compfilter(time, a, w, ind)
 %Function to determine orientation of IMU.  Does so in two steps: 1) Define 
 %initial orientation of device based on direction of gravity and 2) Define
 %orientation thereafter by fusing acceleration and angular velocity
-%estimates.  Method assumes that the device is initially at rest.
+%estimates via complementary filtering.  Method assumes that the device is 
+%initially at rest.
 %Written by Ryan S. McGinnis - ryan.mcginnis14@gmail.com - June 25, 2016
 %
 % Copyright (C) 2016  Ryan S. McGinnis
