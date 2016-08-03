@@ -1,5 +1,5 @@
 # IMU-orientation
-This repo houses code used for determining IMU orientation, and supporting functions for working with quaternions and direction cosine matrices.  All software is protected under the GNU GPLv3. If you have any questions, or would like to contribute, please email me (Ryan McGinnis) at ryan.mcginnis14@gmail.com.
+This repo houses code used for determining IMU orientation, and supporting functions for working with quaternions and direction cosine matrices.  All software is protected under the GNU GPLv3. If you have any questions, or would like to contribute, please email me (Ryan McGinnis) at ryan.mcginnis14@gmail.com.  A good place to start is with main_example.m which provides example implementations of each of the methods for determining IMU orientation. 
 
 Methods include those introduced and/or valudated in:
 * McGinnis, Ryan S., and Noel C. Perkins. "A Highly Miniaturized, Wireless Inertial Measurement Unit for Characterizing the Dynamics of Pitched Baseballs and Softballs." Sensors 12 (2012): 11933-11945.
